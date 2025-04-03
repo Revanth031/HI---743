@@ -30,6 +30,7 @@ library(NHANES)
 How can we predict the Median Value of Owner_Occupied Homes using the lower Status
 
 \<what are we analyzing? Why? What insight can we gain from this analysis.
+#
 
 ### Data Understand and preparation
 
@@ -147,7 +148,45 @@ print(paste("Test MSE:", round(test_mse, 2)))
 
 ## Objective
 
-please predict BMI using Age, SmokeNow, PhysActive for induviduals between the ages of 18 and 70
+#The goal of this project is to predict Body Mass Index (BMI) by exploring three key factors: age, current smoking status, and engagement in physical activity among adults aged 18 to 70.
+
+#1.1 What Are We Examining?
+
+#We are investigating how age, smoking, and physical activity influence BMI. BMI is a widely-used measure of body weight status, and examining these relationships helps us identify important patterns related to lifestyle and health risks.
+
+#1.2 Why Conduct This Analysis?
+
+#An increased BMI is associated with higher risks of various chronic diseases, such as heart disease, hypertension, and type 2 diabetes. Smoking can influence weight through metabolic and appetite-related effects, while physical activity is crucial in managing body weight. Understanding these relationships can help us better grasp how everyday habits and demographic characteristics impact health.
+
+#1.3 Potential Insights
+
+#This analysis aims to reveal how BMI changes with age, assess differences in BMI between smokers and non-smokers, and clarify how physical activity affects weight status. The outcomes could assist in providing targeted health advice and designing effective public health interventions that promote healthy behaviors.
+
+#2. Data Exploration and Preparation
+
+#2.1 Variables Used:
+
+#BMI (Continuous): The primary outcome representing Body Mass Index.
+
+#Age (Continuous): Participants' age, specifically limited to adults aged 18–70.
+
+#SmokeNow (Categorical): Current smoking status (Yes/No).
+
+#PhysActive (Categorical): Physical activity engagement status (Yes/No).
+
+#2.2 Key Questions Addressed:
+
+#How does BMI vary as people age?
+
+#Is there a clear difference in BMI between smokers and non-smokers?
+
+#What relationship exists between physical activity and BMI?
+
+#3. Data Loading and Summary
+
+#We obtained the dataset from the NHANES package, which contains comprehensive health-related data. By summarizing the selected variables (BMI, Age, SmokeNow, PhysActive), we can identify data distributions, detect missing values, and recognize any outliers or inconsistencies. This initial examination ensures data integrity, making our subsequent analysis more robust and reliable.
+
+#please predict BMI using Age, SmokeNow, PhysActive for induviduals between the ages of 18 and 70
 
 ## Data understanding & Preparation
 
@@ -163,6 +202,8 @@ SMOKERS = NHANES %>%
   filter(Age >= 18 & Age <= 70)
 #Loads and filters NHANES dataset for individuals aged 18-70.
 ```
+
+
 ## Data Exploration
 
 ```{r}
@@ -190,6 +231,9 @@ test_data <- anti_join(SMOKERS, SMOKERS_split, by = "id")  # Join using 'id' col
 train_data <- SMOKERS_split
 #Splits the NHANES dataset into training and testing sets.
 ```
+
+#Splitting the dataset into training (75%) and testing (25%) sets helps us accurately evaluate how well the model performs on new, unseen data. We use the training set to build the model, and the test set to assess its ability to generalize. This method is essential in avoiding overfitting, making sure the model captures genuine trends rather than just memorizing the training data.
+
 ## Exploratory Data Analysis
 
 ```{r}
@@ -200,6 +244,8 @@ ggplot(SMOKERS, aes(x = BMI)) +
   geom_histogram(fill = "steelblue", binwidth = 5, color = "white") +
   labs(title = "Distribution of BMI", x = "BMI", y = "Count")
 ```
+#In EDA, we use visualizations like histograms, box plots, and scatter plots to assess data distribution, relationships, and patterns, guiding analysis decisions.
+
 ## Scatterplot: Age vs. BMI
 
 This helps in visualizing the relationship between **Age** and **BMI**.
@@ -210,6 +256,9 @@ ggplot(SMOKERS, aes(x = Age, y = BMI)) +
   geom_point(alpha = 0.6, color = 'blue') +
   labs(title = "Scatterplot: Age vs. BMI", x = "Age", y = "BMI")
 ```
+# Helps in visualizing the relationship between **Age** and **BMI**.
+
+
 ## Scatterplot: SmokeNow vs. BMI
 
 ```{r}
@@ -218,7 +267,19 @@ ggplot(SMOKERS, aes(x = SmokeNow, y = BMI)) +
   geom_boxplot(fill = "lightblue", color = "black") +
   labs(title = "Boxplot: SmokeNow vs. BMI", x = "SmokeNow", y = "BMI")
 ```
+#Creating a scatterplot of SmokeNow versus BMI helps us visually examine the relationship between smoking status and body mass index, making it easier to spot any noticeable patterns or correlations.
+
+
 ## Model Implementation
+
+# Used Simple Linear Regression because it effectively predicts a continuous outcome based on the linear relationship with a single predictor variable. This approach is intuitive and computationally efficient, though it can be influenced by outliers and relies heavily on the assumption of linearity.
+
+##Using Simple Linear Regression on the Training Data
+#Simple linear regression fits the best possible line to the data by minimizing the squared differences between actual and predicted values. We assess how well the model performs using evaluation metrics such as:
+
+#Mean Squared Error (MSE): Indicates the average squared difference between actual outcomes and model predictions, measuring prediction accuracy.
+
+#R-squared (R²): Reflects the proportion of variance in the target variable that the model successfully explains.
 
 ### Perform simple Linear Regression on Training Data
 
@@ -242,6 +303,12 @@ print(paste("Test MSE:", round(test_mse, 2)))
 ```
 ### Simple Linear Regression results & interpretation
 
+#Training MSE: 42.98
+The model has an average squared error of 42.98 on the training data, showing a moderate fit to the data.
+
+#Test MSE: 34.98
+On the test dataset, the model achieves a slightly lower average squared error of 34.98, indicating it generalizes effectively to new, unseen data.
+
 ### Perform Multiple Linear Regression on Training Data
 
 ```{r}
@@ -260,3 +327,13 @@ print(paste("Test MSE:", round(test_mse, 2)))
 #Evaluates NHANES multiple linear regression model using MSE.
 
 ```
+### **Multiple Linear Regression Results & Interpretation*
+
+
+#Training MSE: 41.57
+The average squared error for the training data is 41.57, suggesting the model fits reasonably well but still has potential for improvement.
+
+#Test MSE: 33.69
+The model performs even better on the test data, achieving a lower average squared error of 33.69. This indicates good generalization to new, unseen data.
+
+#Conclusion: The Multiple Linear Regression model outperforms the Simple Linear Regression, as indicated by the lower Test MSE. The results demonstrate that the model generalizes effectively without overfitting. Nonetheless, there may be opportunities to further enhance the model by including additional predictor variables or employing more sophisticated modeling techniques.
