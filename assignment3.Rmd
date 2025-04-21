@@ -1,0 +1,162 @@
+---
+title: "Assignment 3: Logistic Regression & Classification"
+author: "Revanth Gullapalli"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Background
+
+Diabetes is a chronic disease affecting millions of individuals worldwide. Early detection through predictive modeling can help guide prevention and treatment. We use the Pima Indians Diabetes Dataset from the `mlbench` package to build classification models.
+
+```{r}
+# Load required packages
+# install.packages("mlbench")
+# install.packages("caret")
+# install.packages("class")
+
+library(mlbench)
+library(caret)
+library(class)
+
+# Load data
+data("PimaIndiansDiabetes")
+df <- PimaIndiansDiabetes
+
+# Overview
+str(df)
+summary(df)
+```
+
+**Comment:**  
+This section loads necessary packages and the Pima Indians Diabetes dataset. This dataset contains medical information used to predict diabetes outcomes. It also provides a structural overview and summary statistics of the dataset to understand variable types and distributions.
+
+---
+
+## Simple Logistic Regression
+
+### Train/Test Split and Model Fit
+
+```{r}
+set.seed(123)
+train_idx <- sample(1:nrow(df), 0.7 * nrow(df))
+train <- df[train_idx, ]
+test <- df[-train_idx, ]
+
+# Fit logistic regression using glucose
+model_simple <- glm(diabetes ~ glucose, data = train, family = binomial)
+summary(model_simple)
+```
+
+**Comment:**  
+Data is split into 70% training and 30% testing sets. A basic logistic regression model is trained using only glucose to predict diabetes.
+
+---
+
+### Prediction & Evaluation
+
+```{r}
+# Predict on test data
+prob_simple <- predict(model_simple, newdata = test, type = "response")
+pred_simple <- ifelse(prob_simple > 0.5, "pos", "neg")
+
+# Confusion Matrix
+table(Predicted = pred_simple, Actual = test$diabetes)
+```
+
+**Comment:**  
+Predictions are made on the test set and classified based on a 0.5 threshold. A confusion matrix is generated to evaluate performance.
+
+---
+
+## Multiple Logistic Regression
+
+### Model Fit
+
+```{r}
+# Fit model with multiple predictors
+model_multiple <- glm(diabetes ~ glucose + age + mass + pregnant, data = train, family = binomial)
+summary(model_multiple)
+```
+
+**Comment:**  
+A logistic model is trained using multiple predictors (glucose, age, BMI (mass), number of pregnancies). This typically improves prediction accuracy. The prediction process is the same as the simple model.
+
+---
+
+### Prediction & Evaluation
+
+```{r}
+# Predict
+prob_multiple <- predict(model_multiple, newdata = test, type = "response")
+pred_multiple <- ifelse(prob_multiple > 0.5, "pos", "neg")
+
+# Confusion Matrix
+table(Predicted = pred_multiple, Actual = test$diabetes)
+```
+
+**Comment:**  
+- This uses the `model_multiple` to predict the probability of a positive diabetes outcome.
+- Converts probabilities into class labels ("pos" or "neg").
+- `type = "response"` ensures the output is a probability between 0 and 1.
+- Threshold of 0.5 is used for classification.
+- Confusion matrix shows how many cases were correctly and incorrectly classified.
+
+---
+
+## K-Nearest Neighbors (KNN)
+
+### Data Preparation
+
+```{r}
+# Normalize selected columns
+normalize <- function(x) {
+  return ((x - min(x)) / (max(x) - min(x)))
+}
+
+df_norm <- as.data.frame(lapply(df[, c("glucose", "age", "mass", "pregnant")], normalize))
+df_norm$diabetes <- df$diabetes
+
+# Split normalized data
+train_knn <- df_norm[train_idx, ]
+test_knn <- df_norm[-train_idx, ]
+
+# Labels
+train_labels <- train_knn$diabetes
+test_labels <- test_knn$diabetes
+
+# Remove label for modeling
+train_knn <- train_knn[, -ncol(train_knn)]
+test_knn <- test_knn[, -ncol(test_knn)]
+```
+
+**Comment:**  
+KNN requires normalized data. This section normalizes numeric features and adds the target column back. Normalized data is split using the same index. Labels are separated from features to prepare for KNN.
+
+---
+
+### Model Fit and Prediction
+
+```{r}
+# KNN model with k = 5
+knn_pred <- knn(train_knn, test_knn, cl = train_labels, k = 5)
+
+# Confusion Matrix
+table(Predicted = knn_pred, Actual = test_labels)
+```
+
+**Comment:**  
+A KNN classifier with k = 5 is used to predict diabetes. A confusion matrix helps compare results.
+
+---
+
+## Model Comparison and Discussion
+
+- **Simple Logistic Regression**: Only used glucose. Gives insight into how one variable affects diabetes prediction.  
+- **Multiple Logistic Regression**: Includes more predictors (glucose, age, BMI, pregnant), and generally gives better performance due to more context.  
+- **KNN Classification**: Non-parametric model based on similarity. Performance depends on the choice of k and data scaling.  
+
+**Recommendation**: Multiple logistic regression is interpretable and often effective. KNN might slightly improve performance but is less interpretable.
